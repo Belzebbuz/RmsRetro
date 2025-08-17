@@ -1,0 +1,23 @@
+﻿syntax = "proto3";
+import "google/protobuf/empty.proto";
+option csharp_namespace = "RmsRetro.MessageHub.Protos.HubApi";
+service HubApiService {
+  rpc SendNotification(Notification) returns (google.protobuf.Empty);
+  rpc Subscribe(SubscribeRequest) returns (stream Message);
+}
+message SubscribeRequest {
+  string channel_id = 1;
+}
+message Notification {
+  string channel_id = 1;
+  Message message = 2;
+}
+message Message {
+  EventType event_type = 1;
+  string value = 2;
+}
+enum EventType {
+  StateUpdated = 0;
+  TimerTick = 1;
+}
+

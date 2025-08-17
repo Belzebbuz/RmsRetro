@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\RmsRetro.Common\RmsRetro.Common.csproj" />
+      <ProjectReference Include="..\..\RmsRetro.Protos\RmsRetro.Protos.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="ErrorOr" Version="2.0.1" />
+        <PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="9.2.1" />
+        <PackageReference Include="Microsoft.Orleans.Sdk" Version="9.2.1" />
+        <PackageReference Include="Microsoft.Orleans.Serialization.Protobuf" Version="9.2.1" />
+        <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    </ItemGroup>
+</Project>

@@ -1,0 +1,150 @@
+﻿syntax = "proto3";
+import "google/protobuf/empty.proto";
+option csharp_namespace = "RmsRetro.Protos.Api";
+service ApiService {
+  rpc ActivateUser(google.protobuf.Empty) returns (ActivateUserResponse);
+  rpc GetUserStatus(google.protobuf.Empty) returns (GetUserStatusResponse);
+  rpc GetRoomTemplates(google.protobuf.Empty) returns (GetRoomTemplatesResponse);
+  rpc InitRoom(InitRoomRequest) returns (InitRoomResponse);
+  rpc GetRoomInfo(GetRoomInfoRequest) returns (GetRoomInfoResponse);
+  rpc Connect(ConnectRequest) returns (google.protobuf.Empty);
+  rpc InvokeRoomOperation(InvokeRoomOperationRequest) returns (google.protobuf.Empty);
+}
+message ActivateUserResponse {
+  string user_id = 1;
+}
+message GetUserStatusRequest {
+  string user_id = 1;
+}
+message GetUserStatusResponse {
+  bool is_active = 1;
+}
+message ConnectRequest {
+  string room_id = 1;
+}
+
+message GetRoomInfoRequest {
+  string room_id = 1;
+}
+
+message GetRoomInfoResponse {
+  RoomInfo info = 1;
+}
+
+message InitRoomRequest{
+  string room_template_id = 1;
+}
+
+message InitRoomResponse{
+   string room_id = 1;
+}
+
+message RoomInfo {
+  string room_id = 1;
+  repeated RoomOperationTypes available_operations = 2;
+  repeated RoomColumn columns = 3;
+  int32 version = 4;
+  bool isVoteStarted = 5;
+}
+
+message RoomColumn {
+  string id = 1;
+  string column_name = 2;
+  repeated TextCard cards = 3;
+}
+
+message TextCard {
+  string id = 1;
+  string text = 2;
+  int32 order_number = 3;
+  int32 likes_count = 4;
+  repeated CardOperationTypes available_operations = 5;
+}
+
+message InvokeRoomOperationRequest {
+  string room_id = 1;
+  oneof operation {
+      StartTimerOperation start_timer = 2;
+      PauseTimerOperation pause_timer = 3;
+      StartVotingOperation start_voting = 4;
+      StopVotingOperation stop_voting = 5;
+      AddCardOperation add = 7;
+      EditCardOperation edit = 8;
+      CombineCardsOperation combine = 9;
+      DeleteCardOperation delete = 10;
+      AddLikeCardOperation add_like = 11;
+      RemoveLikeCardOperation remove_like = 12;
+      MoveCardOperation move = 13;
+  }
+}
+
+message StartTimerOperation {
+  int32 minutes = 1;
+}
+
+message PauseTimerOperation{}
+
+message StartVotingOperation {
+  int32 votes_per_user = 1;
+  int32 timer_minutes = 2;
+}
+message StopVotingOperation {}
+
+message AddCardOperation {
+  string column_id = 1;
+  string text = 2;
+}
+
+message EditCardOperation {
+  string card_id = 1;
+  string text = 2;
+}
+
+message CombineCardsOperation {
+  string delete_card_id = 1;
+  string target_card_id = 2;
+}
+
+message DeleteCardOperation {
+  string card_id = 1;
+}
+
+message AddLikeCardOperation {
+  string card_id = 1;
+}
+
+message MoveCardOperation {
+  string card_id = 1;
+  string new_column_id = 2;
+  int32 new_order_id = 3;
+}
+
+message ChangeCardOrderEvent {
+  string card_id = 1;
+  string new_order_number = 2;
+}
+
+message RemoveLikeCardOperation {
+  string card_id = 1;
+}
+
+message GetRoomTemplatesResponse {
+  repeated string template_ids = 1;
+}
+
+enum RoomOperationTypes {
+    StartTimer = 0;
+    PauseTimer = 1;
+    StartVoting = 2;
+    StopVoting = 3;
+    AddCard = 4;
+}
+
+enum CardOperationTypes {
+    EditCard = 0;
+    CombineCards = 1;
+    DeleteCard = 2;
+    AddLikeCard = 3;
+    RemoveLikeCard = 4;
+    MoveCard = 5;
+}
