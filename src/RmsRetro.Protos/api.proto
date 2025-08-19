@@ -14,7 +14,6 @@ message ActivateUserResponse {
   string user_id = 1;
 }
 message GetUserStatusRequest {
-  string user_id = 1;
 }
 message GetUserStatusResponse {
   bool is_active = 1;
