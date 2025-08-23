@@ -16,9 +16,9 @@ public class RoomOperationHandler : IRoomOperationHandler
 
 	public async Task HandleAsync(Room room, InvokeRoomOperationRequest request)
 	{
+		room.RebuildCardsMap();
 		var operation = _commandFactory.CreateCommand(request);
 		await operation.ExecuteAsync(room);
 		room.Version++;
-		room.RebuildCardsMap();
 	}
 }

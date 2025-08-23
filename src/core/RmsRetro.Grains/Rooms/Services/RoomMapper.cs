@@ -22,7 +22,9 @@ public class RoomMapper(IAuthService authService, IOperationResolver resolver) :
 				Version = room.Version,
 				AvailableOperations = { resolver.GetRoomOperations(authService.UserId, room) },
 				Columns = { columns },
-				IsVoteStarted = room.IsVoteStarted
+				IsVoteStarted = room.IsVoteStarted,
+				VotesCount = room.VotesCount,
+				VotesLeft = room.Users.FirstOrDefault(x => x.Id == authService.UserId)?.VotesCount ?? 0
 			}
 		};
 	}
@@ -33,6 +35,8 @@ public class RoomMapper(IAuthService authService, IOperationResolver resolver) :
 		{
 			Id = c.Id.ToString(),
 			ColumnName = c.Name,
+			Order = c.OrderId,
+			Color = c.Color,
 			Cards =
 			{
 				c.Cards.OrderBy(x => x.OrderId)
@@ -47,8 +51,9 @@ public class RoomMapper(IAuthService authService, IOperationResolver resolver) :
 		{
 			Id = card.Id.ToString(),
 			Text = card.Text,
-			OrderNumber = card.OrderId,
-			LikesCount = card.UsersLiked.Count,
+			Order = card.OrderId,
+			LikesCount = room.IsVoteStarted ? 0 : card.UsersLiked.Count,
+			IsUserLiked = card.UsersLiked.Contains(authService.UserId),
 			AvailableOperations = { resolver.GetCardOperations(authService.UserId, room, card) }
 		};
 	}

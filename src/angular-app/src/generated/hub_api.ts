@@ -11,24 +11,27 @@ import { Empty } from "./google/protobuf/empty";
 
 export const protobufPackage = "";
 
-export enum EventType {
-  StateUpdated = 0,
-  TimerTick = 1,
-  UNRECOGNIZED = -1,
-}
-
 export interface SubscribeRequest {
   channelId: string;
 }
 
 export interface Notification {
   channelId: string;
-  message: Message | undefined;
+  message: NotificationEvent | undefined;
 }
 
-export interface Message {
-  eventType: EventType;
+export interface NotificationEvent {
+  stateChanged?: StateChangedEvent | undefined;
+  timerTick?: TimerTickEvent | undefined;
+}
+
+export interface StateChangedEvent {
   value: string;
+}
+
+export interface TimerTickEvent {
+  currentValue: number;
+  totalValue: number;
 }
 
 function createBaseSubscribeRequest(): SubscribeRequest {
@@ -87,7 +90,7 @@ export const Notification: MessageFns<Notification> = {
       writer.uint32(10).string(message.channelId);
     }
     if (message.message !== undefined) {
-      Message.encode(message.message, writer.uint32(18).fork()).join();
+      NotificationEvent.encode(message.message, writer.uint32(18).fork()).join();
     }
     return writer;
   },
@@ -112,7 +115,7 @@ export const Notification: MessageFns<Notification> = {
             break;
           }
 
-          message.message = Message.decode(reader, reader.uint32());
+          message.message = NotificationEvent.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -131,44 +134,95 @@ export const Notification: MessageFns<Notification> = {
     const message = createBaseNotification();
     message.channelId = object.channelId ?? "";
     message.message = (object.message !== undefined && object.message !== null)
-      ? Message.fromPartial(object.message)
+      ? NotificationEvent.fromPartial(object.message)
       : undefined;
     return message;
   },
 };
 
-function createBaseMessage(): Message {
-  return { eventType: 0, value: "" };
+function createBaseNotificationEvent(): NotificationEvent {
+  return { stateChanged: undefined, timerTick: undefined };
 }
 
-export const Message: MessageFns<Message> = {
-  encode(message: Message, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.eventType !== 0) {
-      writer.uint32(8).int32(message.eventType);
+export const NotificationEvent: MessageFns<NotificationEvent> = {
+  encode(message: NotificationEvent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.stateChanged !== undefined) {
+      StateChangedEvent.encode(message.stateChanged, writer.uint32(10).fork()).join();
     }
-    if (message.value !== "") {
-      writer.uint32(18).string(message.value);
+    if (message.timerTick !== undefined) {
+      TimerTickEvent.encode(message.timerTick, writer.uint32(18).fork()).join();
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): Message {
+  decode(input: BinaryReader | Uint8Array, length?: number): NotificationEvent {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMessage();
+    const message = createBaseNotificationEvent();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.eventType = reader.int32() as any;
+          message.stateChanged = StateChangedEvent.decode(reader, reader.uint32());
           continue;
         }
         case 2: {
           if (tag !== 18) {
+            break;
+          }
+
+          message.timerTick = TimerTickEvent.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create(base?: DeepPartial<NotificationEvent>): NotificationEvent {
+    return NotificationEvent.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<NotificationEvent>): NotificationEvent {
+    const message = createBaseNotificationEvent();
+    message.stateChanged = (object.stateChanged !== undefined && object.stateChanged !== null)
+      ? StateChangedEvent.fromPartial(object.stateChanged)
+      : undefined;
+    message.timerTick = (object.timerTick !== undefined && object.timerTick !== null)
+      ? TimerTickEvent.fromPartial(object.timerTick)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseStateChangedEvent(): StateChangedEvent {
+  return { value: "" };
+}
+
+export const StateChangedEvent: MessageFns<StateChangedEvent> = {
+  encode(message: StateChangedEvent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.value !== "") {
+      writer.uint32(10).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): StateChangedEvent {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseStateChangedEvent();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
             break;
           }
 
@@ -184,13 +238,70 @@ export const Message: MessageFns<Message> = {
     return message;
   },
 
-  create(base?: DeepPartial<Message>): Message {
-    return Message.fromPartial(base ?? {});
+  create(base?: DeepPartial<StateChangedEvent>): StateChangedEvent {
+    return StateChangedEvent.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<Message>): Message {
-    const message = createBaseMessage();
-    message.eventType = object.eventType ?? 0;
+  fromPartial(object: DeepPartial<StateChangedEvent>): StateChangedEvent {
+    const message = createBaseStateChangedEvent();
     message.value = object.value ?? "";
+    return message;
+  },
+};
+
+function createBaseTimerTickEvent(): TimerTickEvent {
+  return { currentValue: 0, totalValue: 0 };
+}
+
+export const TimerTickEvent: MessageFns<TimerTickEvent> = {
+  encode(message: TimerTickEvent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.currentValue !== 0) {
+      writer.uint32(8).int32(message.currentValue);
+    }
+    if (message.totalValue !== 0) {
+      writer.uint32(16).int32(message.totalValue);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TimerTickEvent {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTimerTickEvent();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.currentValue = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.totalValue = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create(base?: DeepPartial<TimerTickEvent>): TimerTickEvent {
+    return TimerTickEvent.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<TimerTickEvent>): TimerTickEvent {
+    const message = createBaseTimerTickEvent();
+    message.currentValue = object.currentValue ?? 0;
+    message.totalValue = object.totalValue ?? 0;
     return message;
   },
 };
@@ -212,7 +323,7 @@ export const HubApiServiceDefinition = {
       name: "Subscribe",
       requestType: SubscribeRequest,
       requestStream: false,
-      responseType: Message,
+      responseType: NotificationEvent,
       responseStream: true,
       options: {},
     },
@@ -224,12 +335,15 @@ export interface HubApiServiceImplementation<CallContextExt = {}> {
   subscribe(
     request: SubscribeRequest,
     context: CallContext & CallContextExt,
-  ): ServerStreamingMethodResult<DeepPartial<Message>>;
+  ): ServerStreamingMethodResult<DeepPartial<NotificationEvent>>;
 }
 
 export interface HubApiServiceClient<CallOptionsExt = {}> {
   sendNotification(request: DeepPartial<Notification>, options?: CallOptions & CallOptionsExt): Promise<Empty>;
-  subscribe(request: DeepPartial<SubscribeRequest>, options?: CallOptions & CallOptionsExt): AsyncIterable<Message>;
+  subscribe(
+    request: DeepPartial<SubscribeRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): AsyncIterable<NotificationEvent>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;

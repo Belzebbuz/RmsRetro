@@ -12,8 +12,13 @@ public class StartVotingCommand(StartVotingOperation operation, IAuthService aut
 {
 	protected override async Task ExecuteCoreAsync(Room state)
 	{
+		state.VotesCount = Operation.VotesPerUser;
 		state.IsVoteStarted = true;
 		state.Users.ForEach(x => x.VotesCount = Operation.VotesPerUser);
+		foreach (var cardsValue in state.Cards.Values)
+		{
+			cardsValue.UsersLiked.Clear();
+		}
 		if (Operation.TimerMinutes > 0)
 		{
 			var timerGrain = factory.GetGrain<IRoomTimerGrain>(state.Id);

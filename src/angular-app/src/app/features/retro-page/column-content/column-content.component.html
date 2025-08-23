@@ -1,0 +1,45 @@
+@if (column && room) {
+<div
+(mouseleave)="draggedCard = null"
+  [id]="column.id"
+  cdkDropList
+  [cdkDropListData]="column.cards"
+  [cdkDropListConnectedTo]="getConnectedColumns()"
+  (cdkDropListDropped)="onCardDrop($event)"
+  class="content"
+>
+  <header class="column-header">
+    <tui-icon icon="@tui.grip-vertical" tuiTileHandle class="column-handle-icon" />
+    <strong>{{ column.columnName }}</strong>
+  </header>
+  <button
+    [disabled]="!room.canAddCard"
+    (click)="addCard()"
+    appearance="secondary"
+    tuiButton
+    size="m"
+    style="width: 100%"
+    type="button"
+  >
+    Добавить
+  </button>
+
+  @for (item of newCards; track $index) {
+  <app-new-card [column]="column" (onSave)="saveCard($index)" (onDelete)="deleteNewCard($index)" [card]="item" />
+  } @for(card of column.cards; track card.id){
+  <app-card
+    class="card"
+    cdkDrag
+    [cdkDragDisabled]="card.editMode || !card.canMove"
+    (cdkDragStarted)="draggedCard = card"
+    [column]="column"
+    [card]="card"
+    [ngClass]="{ 'merge-target': isMergeTarget(card) }"
+    (mouseenter)="hoveredCard = card"
+    (mouseleave)="hoveredCard = null"
+  >
+      <div class="card-placeholder" *cdkDragPlaceholder></div>
+  </app-card>
+  }
+</div>
+}

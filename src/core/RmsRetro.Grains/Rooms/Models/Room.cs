@@ -14,13 +14,8 @@ public class Room
 	public IReadOnlyDictionary<Guid, TextCard> Cards => _cards.AsReadOnly();
 
 	public bool IsVoteStarted { get; set; }
-
+	public int VotesCount { get; set; }
 	private Dictionary<Guid, TextCard> _cards  = new ();
-
-	public Room()
-	{
-		RebuildCardsMap();
-	}
 
 	public void RebuildCardsMap()
 	{

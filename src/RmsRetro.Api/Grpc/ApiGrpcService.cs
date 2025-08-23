@@ -16,7 +16,7 @@ public class ApiGrpcService(IClusterClient client) : ApiService.ApiServiceBase
 		=> client.GetGrain<IRoomGrain>(Guid.NewGuid()).InitAsync(request);
 
 	public override Task<Empty> Connect(ConnectRequest request, ServerCallContext context)
-		=> client.GetGrain<IRoomGrain>(Guid.NewGuid()).ConnectAsync();
+		=> client.GetGrain<IRoomGrain>(Guid.Parse(request.RoomId)).ConnectAsync();
 
 	public override Task<GetRoomTemplatesResponse> GetRoomTemplates(Empty request, ServerCallContext context)
 	{

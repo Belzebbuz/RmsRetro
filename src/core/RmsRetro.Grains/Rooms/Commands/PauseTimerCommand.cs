@@ -7,8 +7,8 @@ using RmsRetro.Protos.Api;
 
 namespace RmsRetro.Grains.Rooms.Commands;
 
-public class PauseTimerCommand(StartTimerOperation operation, IAuthService authService, IGrainFactory factory, IOperationResolver resolver)
-	: RoomCommandBaseHandler<StartTimerOperation>(operation, authService)
+public class PauseTimerCommand(PauseTimerOperation operation, IAuthService authService, IGrainFactory factory, IOperationResolver resolver)
+	: RoomCommandBaseHandler<PauseTimerOperation>(operation, authService)
 {
 	protected override async Task ExecuteCoreAsync(Room state)
 	{

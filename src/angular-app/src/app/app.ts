@@ -1,7 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './services/grpc-services/auth.service';
-import {TuiRoot} from '@taiga-ui/core';
 
 @Component({
   selector: 'app-root',

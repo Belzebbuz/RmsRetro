@@ -11,7 +11,7 @@ export class AuthService {
   client: ApiServiceClient;
   metadata = inject(MetadataService);
   constructor(private readonly grpc: GrpcService) {
-    this.client = grpc.getClient(ApiServiceDefinition);
+    this.client = grpc.getApiClient(ApiServiceDefinition);
   }
 
   async activateUser() {

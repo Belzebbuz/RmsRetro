@@ -20,7 +20,7 @@ public class ExceptionHandlingInterceptor(ILogger<ExceptionHandlingInterceptor> 
 		}
 		catch (Exception e)
 		{
-			logger.LogError(e.Message);
+			logger.LogError(e.ToString());
 			throw new RpcException(new Status(StatusCode.Internal, "Произошла внутренняя ошибка сервера"));
 		}
 	}

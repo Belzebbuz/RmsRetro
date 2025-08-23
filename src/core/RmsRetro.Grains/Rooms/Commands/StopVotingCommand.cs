@@ -16,7 +16,19 @@ public class StopVotingCommand(
 {
 	protected override async Task ExecuteCoreAsync(Room state)
 	{
+		state.VotesCount = 0;
+		state.Users.ForEach(x => x.VotesCount = 0);
 		state.IsVoteStarted = false;
+
+		foreach (var column in state.Columns)
+		{
+			column.Value.Cards = column.Value.Cards.OrderByDescending(x => x.UsersLiked.Count).ToList();
+			for (int i = 0; i < column.Value.Cards.Count; i++)
+			{
+				column.Value.Cards[i].OrderId = i;
+			}
+		}
+		
 		await factory.GetGrain<IRoomTimerGrain>(state.Id).StopAsync();
 	}
 

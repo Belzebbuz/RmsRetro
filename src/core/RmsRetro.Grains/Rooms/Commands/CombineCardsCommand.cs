@@ -22,8 +22,19 @@ public class CombineCardsCommand(CombineCardsOperation operation, IAuthService a
 
 		newText.AppendLine(targetCard.Text);
 		newText.AppendLine("--------------");
-		newText.AppendLine(deleteCard.Text);
-
+		newText.Append(deleteCard.Text);
+		targetCard.Text = newText.ToString();
+	
+		foreach (var userId in deleteCard.UsersLiked)
+		{
+			var userAdded = targetCard.UsersLiked.Add(userId);
+			if (state.IsVoteStarted)
+			{
+				var user = state.Users.First(x => x.Id == userId);
+				if(!userAdded)
+					user.VotesCount++;
+			}
+		}
 		return Task.CompletedTask;
 	}
 

@@ -1,3 +1,47 @@
-<p>
-  retro-page works!
-</p>
+@if(roomInfo){
+<nav>
+  <div class="nav-votes">
+    @if (roomInfo.isVoteStarted) {
+    <tui-icon icon="@tui.thumbs-up" [style.color]="'var(--tui-background-accent-1)'"></tui-icon>
+    <progress
+      tuiProgressBar
+      size="s"
+      style="margin-top: 0.6rem;"
+      [max]="roomInfo.votesCount"
+      [segments]="roomInfo.votesCount"
+      [value]="roomInfo.votesLeft"
+    ></progress>
+    }
+  </div>
+  <div class="nav-buttons">
+    @if (timerSoundOff && timer) {
+      <button tuiIconButton iconStart="@tui.volume-x" (click)="toggleSound()" appearance="secondary"></button>
+    } @else if(!timerSoundOff && timer) {
+      <button tuiIconButton iconStart="@tui.volume-2" (click)="toggleSound()" appearance="secondary"></button>
+    }
+    <button [disabled]="!roomInfo.canStartTimer && !roomInfo.canStopTimer" appearance="secondary" (click)="startTimer()" tuiButton type="button">
+      @if(timer){
+      <tui-progress-circle size="xs" [max]="timerMaxValue" [value]="timerCurrentValue">
+      </tui-progress-circle>
+      {{ timer }}
+      } @else {
+      <tui-icon icon="@tui.timer"></tui-icon>
+      Поставить таймер }
+    </button>
+    <button [disabled]="!roomInfo.canStartVote && !roomInfo.canStopVote" (click)="startVote()" tuiButton type="button">
+      @if (roomInfo.isVoteStarted) { Остановить голосование } @else { Начать голосование }
+    </button>
+  </div>
+</nav>
+
+<tui-tiles class="board" [debounce]="500" [(order)]="order">
+  @for (column of roomInfo.columns; track column.id; let idx = $index){
+
+  <tui-tile class="column" [style.order]="order.get(idx)">
+    <app-column-content [room]="roomInfo" [column]="column"></app-column-content>
+  </tui-tile>
+
+  }
+</tui-tiles>
+<audio  #audio [loop]="true" [volume]=".005" tuiMedia [paused]="isTimerPaused || timerSoundOff"  src="assets/music/timer_music.mp3"></audio>
+}

@@ -13,7 +13,7 @@ public class OperationResolver : IOperationResolver
 		var user = room.Users.FirstOrDefault(x => x.Id == userId);
 		if (user == null)
 			return result;
-		if (room.Owners.Contains(userId) || card.UserId == userId)
+		if (room.Owners.Contains(userId) || (card.UserId == userId && !room.IsVoteStarted))
 		{
 			result.Add(CardOperationTypes.EditCard);
 			result.Add(CardOperationTypes.DeleteCard);
@@ -32,7 +32,8 @@ public class OperationResolver : IOperationResolver
 	public IReadOnlySet<RoomOperationTypes> GetRoomOperations(string userId, Room room)
 	{
 		var result = new HashSet<RoomOperationTypes>();
-		result.Add(RoomOperationTypes.AddCard);
+		if(!room.IsVoteStarted)
+			result.Add(RoomOperationTypes.AddCard);
 		if (!room.Owners.Contains(userId)) 
 			return result;
 		result.Add(RoomOperationTypes.StartTimer);

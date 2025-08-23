@@ -1,0 +1,15 @@
+<div class="content">
+  <tui-textfield>
+    <label tuiLabel>Таймер</label>
+
+    <input
+      postfix=" min"
+      tuiInputNumber
+      [min]="0"
+      [max]="100"
+      [step]="1"
+      [(ngModel)]="timerMinutes"
+    />
+  </tui-textfield>
+  <button (click)="startTimer()" tuiButton>Старт</button>
+</div>

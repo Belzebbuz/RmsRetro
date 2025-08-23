@@ -1,0 +1,14 @@
+<div class="content">
+  <tui-textfield>
+  <label tuiLabel>Количество голосов</label>
+
+  <input tuiInputNumber [min]="1" [max]="100" [step]="1" [(ngModel)]="votesPerUser" />
+</tui-textfield>
+
+<tui-textfield>
+  <label tuiLabel>Таймер</label>
+
+  <input postfix=" min" tuiInputNumber [min]="0" [max]="100" [step]="1" [(ngModel)]="timerMinutes" />
+</tui-textfield>
+<button (click)="startVote()" tuiButton>Начать</button>
+</div>

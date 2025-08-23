@@ -1,0 +1,14 @@
+@if(card && column){
+<div tuiAppearance="{{column.color}}" class="card">
+  <header tuiHeader>
+    <tui-textfield tuiAppearance="outline" style="width: 100%">
+      <label tuiLabel>Новая карточка</label>
+      <textarea tuiAutoFocus="" [(ngModel)]="card.text" tuiTextarea [min]="4" [max]="10" placeholder="Напиши что-то"></textarea>
+    </tui-textfield>
+  </header>
+  <footer class="new-card-footer">
+    <button (click)="onSave.emit()" appearance="primary" size="m" tuiButton type="button">Сохранить</button>
+    <button (click)="onDelete.emit()" appearance="secondary-destructive" size="m" tuiButton  type="button">Удалить</button>
+  </footer>
+</div>
+}

@@ -43,21 +43,26 @@ message RoomInfo {
   repeated RoomOperationTypes available_operations = 2;
   repeated RoomColumn columns = 3;
   int32 version = 4;
-  bool isVoteStarted = 5;
+  bool is_vote_started = 5;
+  int32 votes_count = 6;
+  int32 votes_left = 7;
 }
 
 message RoomColumn {
   string id = 1;
-  string column_name = 2;
-  repeated TextCard cards = 3;
+  string column_name = 3;
+  string color = 4;
+  int32 order = 5;
+  repeated TextCard cards = 6;
 }
 
 message TextCard {
   string id = 1;
   string text = 2;
-  int32 order_number = 3;
+  int32 order = 3;
   int32 likes_count = 4;
-  repeated CardOperationTypes available_operations = 5;
+  bool is_user_liked = 5;
+  repeated CardOperationTypes available_operations = 6;
 }
 
 message InvokeRoomOperationRequest {

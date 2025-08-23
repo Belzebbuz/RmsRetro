@@ -17,7 +17,7 @@ public class HubApiGrpcService(
 		return new Empty();
 	}
 
-	public override async Task Subscribe(SubscribeRequest request, IServerStreamWriter<Message> responseStream, ServerCallContext context)
+	public override async Task Subscribe(SubscribeRequest request, IServerStreamWriter<NotificationEvent> responseStream, ServerCallContext context)
 	{
 		var userId = context.RequestHeaders.GetValue("x-player-id") ?? throw new UnauthorizedAccessException();
 		var userInfo = await client.GetUserStatusAsync(new(), new Metadata()

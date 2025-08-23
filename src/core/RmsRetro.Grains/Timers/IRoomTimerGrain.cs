@@ -37,8 +37,9 @@ public class RoomTimerGrain(INotificationHubGateway gateway) : Grain, IRoomTimer
 		return new Empty().AsTask();
 	}
 	
-	public Task StartVoteAsync(int minutes)
+	public async Task StartVoteAsync(int minutes)
 	{
+		await StopAsync();
 		_currentValue = minutes * 60;
 		_startValue = minutes * 60;
 		_timer = this.RegisterGrainTimer(_ => TimerTick(true), new GrainTimerCreationOptions
@@ -47,13 +48,20 @@ public class RoomTimerGrain(INotificationHubGateway gateway) : Grain, IRoomTimer
 			Period = TimeSpan.FromSeconds(1),
 			KeepAlive = true
 		});
-		return Task.CompletedTask;
 	}
 	
-	public Task<Empty> StopAsync()
+	public async Task<Empty> StopAsync()
 	{
 		_timer?.Dispose();
-		return new Empty().AsTask();
+		await gateway.NotifyAsync(this.GetPrimaryKey().ToString(), new ()
+		{
+			TimerTick = new TimerTickEvent()
+			{
+				CurrentValue = 0,
+				TotalValue = 0
+			}
+		});
+		return new Empty();
 	}
 
 	private async Task TimerTick(bool stopVoteOnEnd = false)
@@ -64,8 +72,11 @@ public class RoomTimerGrain(INotificationHubGateway gateway) : Grain, IRoomTimer
 		_currentValue--;
 		await gateway.NotifyAsync(this.GetPrimaryKey().ToString(), new ()
 		{
-			EventType = EventType.StateUpdated,
-			Value = _currentValue.Value.ToString()
+			TimerTick = new TimerTickEvent()
+			{
+				CurrentValue = _currentValue.Value,
+				TotalValue = _startValue.Value
+			}
 		});
 		
 		if (_currentValue == 0)

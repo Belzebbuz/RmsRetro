@@ -1,0 +1,91 @@
+@if(card && column){
+<div tuiAppearance="{{ column.color }}" class="card">
+  <header tuiHeader>
+    @if (card.editMode) {
+    <tui-textfield [tuiTextfieldCleaner]="false" style="width: 100%">
+      <textarea tuiAutoFocus="true" [(ngModel)]="card!.text" [min]="3" [max]="20" tuiTextarea></textarea>
+      <button
+        (click)="saveCard()"
+        tuiIconButton
+        size="m"
+        style="margin: -1rem"
+        type="button"
+        iconStart="@tui.save"
+      ></button>
+      <button
+        (click)="card.editMode = false"
+        tuiIconButton
+        size="m"
+        type="button"
+        iconStart="@tui.x"
+      ></button>
+    </tui-textfield>
+    } @else {
+    <div tuiCardRow class="multiline-text tui-text_body-m-2">{{ card.text }}</div>
+    <aside tuiAccessories>
+      <button
+        appearance="icon"
+        iconStart="@tui.ellipsis-vertical"
+        size="m"
+        tuiIconButton
+        tuiDropdownAlign="right"
+        [tuiAppearanceState]="optionsOpen ? 'active' : null"
+        [tuiDropdown]="dropdown"
+        type="button"
+        [tuiDropdownSided]="true"
+        [(tuiDropdownOpen)]="optionsOpen"
+      ></button>
+    </aside>
+    }
+  </header>
+  <div class="footer">
+    <tui-badged-content>
+      @if (card.likesCount > 0) {
+      <tui-badge-notification tuiAppearance="primary" size="s" tuiSlot="top">
+        {{ card.likesCount }}
+      </tui-badge-notification>
+      }
+      <button
+        (click)="addLike()"
+        [disabled]="!card.canLike && !card.canRemoveLike"
+        appearance="outline"
+        [tuiAppearanceMode]="card.isUserLiked ? 'checked' : 'default'"
+        iconStart="@tui.thumbs-up"
+        size="s"
+        tuiIconButton
+        type="button"
+        [style.border-radius.%]="100"
+      ></button>
+    </tui-badged-content>
+  </div>
+</div>
+}
+
+<ng-template #dropdown>
+  <tui-data-list>
+    <tui-opt-group>
+      <button
+        [disabled]="!card?.canEdit"
+        (click)="enableEditMode()"
+        style="padding: 0 2rem 0 2rem"
+        appearance="icon"
+        tuiOption
+        type="button"
+      >
+        Изменить
+      </button>
+    </tui-opt-group>
+    <tui-opt-group>
+      <button
+        [disabled]="!card?.canDelete"
+        (click)="deleteCard()"
+        style="padding: 0 2rem 0 2rem"
+        appearance="icon"
+        tuiOption
+        type="button"
+      >
+        Удалить
+      </button>
+    </tui-opt-group>
+  </tui-data-list>
+</ng-template>

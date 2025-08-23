@@ -4,12 +4,12 @@ namespace RmsRetro.Grains.Gateways;
 
 public interface INotificationHubGateway
 {
-	public Task NotifyAsync(string channelId, Message mesage);
+	public Task NotifyAsync(string channelId, NotificationEvent message);
 }
 
 public class NotificationHubGateway(HubApiService.HubApiServiceClient client) : INotificationHubGateway
 {
-	public async Task NotifyAsync(string channelId, Message message)
+	public async Task NotifyAsync(string channelId, NotificationEvent message)
 	{
 		var request = new Notification
 		{

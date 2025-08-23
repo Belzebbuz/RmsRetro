@@ -60,7 +60,7 @@ public class RoomGrain(
 	public Task<GetRoomInfoResponse> GetAsync() 
 		=> mapper.ToInfo(_state.State).AsTask();
 
-	[SaveState]
+	[SaveState, AllowAnonymousGrain]
 	public Task StopVoteAsync()
 	{
 		_state.State.IsVoteStarted = false;
@@ -83,19 +83,22 @@ public class RoomGrain(
 		{
 			Id = Guid.NewGuid(),
 			Name = "Went Well",
+			Color = "positive",
 			OrderId = 1
 		};
-		var column2 = new Column()
+		var column2 = new Column
 		{
 			Id = Guid.NewGuid(),
 			Name = "To Improve",
-			OrderId = 2
+			OrderId = 2,
+			Color = "negative"
 		};
-		var column3 = new Column()
+		var column3 = new Column
 		{
 			Id = Guid.NewGuid(),
 			Name = "Action Items",
-			OrderId = 3
+			OrderId = 3,
+			Color = "info"
 		};
 		_state.State.Columns.Add(column1.Id, column1);
 		_state.State.Columns.Add(column2.Id, column2);

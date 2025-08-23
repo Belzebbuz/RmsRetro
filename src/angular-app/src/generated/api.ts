@@ -35,7 +35,6 @@ export interface ActivateUserResponse {
 }
 
 export interface GetUserStatusRequest {
-  userId: string;
 }
 
 export interface GetUserStatusResponse {
@@ -68,19 +67,24 @@ export interface RoomInfo {
   columns: RoomColumn[];
   version: number;
   isVoteStarted: boolean;
+  votesCount: number;
+  votesLeft: number;
 }
 
 export interface RoomColumn {
   id: string;
   columnName: string;
+  color: string;
+  order: number;
   cards: TextCard[];
 }
 
 export interface TextCard {
   id: string;
   text: string;
-  orderNumber: number;
+  order: number;
   likesCount: number;
+  isUserLiked: boolean;
   availableOperations: CardOperationTypes[];
 }
 
@@ -203,14 +207,11 @@ export const ActivateUserResponse: MessageFns<ActivateUserResponse> = {
 };
 
 function createBaseGetUserStatusRequest(): GetUserStatusRequest {
-  return { userId: "" };
+  return {};
 }
 
 export const GetUserStatusRequest: MessageFns<GetUserStatusRequest> = {
-  encode(message: GetUserStatusRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.userId !== "") {
-      writer.uint32(10).string(message.userId);
-    }
+  encode(_: GetUserStatusRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     return writer;
   },
 
@@ -221,14 +222,6 @@ export const GetUserStatusRequest: MessageFns<GetUserStatusRequest> = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.userId = reader.string();
-          continue;
-        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -241,9 +234,8 @@ export const GetUserStatusRequest: MessageFns<GetUserStatusRequest> = {
   create(base?: DeepPartial<GetUserStatusRequest>): GetUserStatusRequest {
     return GetUserStatusRequest.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<GetUserStatusRequest>): GetUserStatusRequest {
+  fromPartial(_: DeepPartial<GetUserStatusRequest>): GetUserStatusRequest {
     const message = createBaseGetUserStatusRequest();
-    message.userId = object.userId ?? "";
     return message;
   },
 };
@@ -525,7 +517,15 @@ export const InitRoomResponse: MessageFns<InitRoomResponse> = {
 };
 
 function createBaseRoomInfo(): RoomInfo {
-  return { roomId: "", availableOperations: [], columns: [], version: 0, isVoteStarted: false };
+  return {
+    roomId: "",
+    availableOperations: [],
+    columns: [],
+    version: 0,
+    isVoteStarted: false,
+    votesCount: 0,
+    votesLeft: 0,
+  };
 }
 
 export const RoomInfo: MessageFns<RoomInfo> = {
@@ -546,6 +546,12 @@ export const RoomInfo: MessageFns<RoomInfo> = {
     }
     if (message.isVoteStarted !== false) {
       writer.uint32(40).bool(message.isVoteStarted);
+    }
+    if (message.votesCount !== 0) {
+      writer.uint32(48).int32(message.votesCount);
+    }
+    if (message.votesLeft !== 0) {
+      writer.uint32(56).int32(message.votesLeft);
     }
     return writer;
   },
@@ -607,6 +613,22 @@ export const RoomInfo: MessageFns<RoomInfo> = {
           message.isVoteStarted = reader.bool();
           continue;
         }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.votesCount = reader.int32();
+          continue;
+        }
+        case 7: {
+          if (tag !== 56) {
+            break;
+          }
+
+          message.votesLeft = reader.int32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -626,12 +648,14 @@ export const RoomInfo: MessageFns<RoomInfo> = {
     message.columns = object.columns?.map((e) => RoomColumn.fromPartial(e)) || [];
     message.version = object.version ?? 0;
     message.isVoteStarted = object.isVoteStarted ?? false;
+    message.votesCount = object.votesCount ?? 0;
+    message.votesLeft = object.votesLeft ?? 0;
     return message;
   },
 };
 
 function createBaseRoomColumn(): RoomColumn {
-  return { id: "", columnName: "", cards: [] };
+  return { id: "", columnName: "", color: "", order: 0, cards: [] };
 }
 
 export const RoomColumn: MessageFns<RoomColumn> = {
@@ -640,10 +664,16 @@ export const RoomColumn: MessageFns<RoomColumn> = {
       writer.uint32(10).string(message.id);
     }
     if (message.columnName !== "") {
-      writer.uint32(18).string(message.columnName);
+      writer.uint32(26).string(message.columnName);
+    }
+    if (message.color !== "") {
+      writer.uint32(34).string(message.color);
+    }
+    if (message.order !== 0) {
+      writer.uint32(40).int32(message.order);
     }
     for (const v of message.cards) {
-      TextCard.encode(v!, writer.uint32(26).fork()).join();
+      TextCard.encode(v!, writer.uint32(50).fork()).join();
     }
     return writer;
   },
@@ -663,16 +693,32 @@ export const RoomColumn: MessageFns<RoomColumn> = {
           message.id = reader.string();
           continue;
         }
-        case 2: {
-          if (tag !== 18) {
+        case 3: {
+          if (tag !== 26) {
             break;
           }
 
           message.columnName = reader.string();
           continue;
         }
-        case 3: {
-          if (tag !== 26) {
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.color = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.order = reader.int32();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
             break;
           }
 
@@ -695,13 +741,15 @@ export const RoomColumn: MessageFns<RoomColumn> = {
     const message = createBaseRoomColumn();
     message.id = object.id ?? "";
     message.columnName = object.columnName ?? "";
+    message.color = object.color ?? "";
+    message.order = object.order ?? 0;
     message.cards = object.cards?.map((e) => TextCard.fromPartial(e)) || [];
     return message;
   },
 };
 
 function createBaseTextCard(): TextCard {
-  return { id: "", text: "", orderNumber: 0, likesCount: 0, availableOperations: [] };
+  return { id: "", text: "", order: 0, likesCount: 0, isUserLiked: false, availableOperations: [] };
 }
 
 export const TextCard: MessageFns<TextCard> = {
@@ -712,13 +760,16 @@ export const TextCard: MessageFns<TextCard> = {
     if (message.text !== "") {
       writer.uint32(18).string(message.text);
     }
-    if (message.orderNumber !== 0) {
-      writer.uint32(24).int32(message.orderNumber);
+    if (message.order !== 0) {
+      writer.uint32(24).int32(message.order);
     }
     if (message.likesCount !== 0) {
       writer.uint32(32).int32(message.likesCount);
     }
-    writer.uint32(42).fork();
+    if (message.isUserLiked !== false) {
+      writer.uint32(40).bool(message.isUserLiked);
+    }
+    writer.uint32(50).fork();
     for (const v of message.availableOperations) {
       writer.int32(v);
     }
@@ -754,7 +805,7 @@ export const TextCard: MessageFns<TextCard> = {
             break;
           }
 
-          message.orderNumber = reader.int32();
+          message.order = reader.int32();
           continue;
         }
         case 4: {
@@ -766,13 +817,21 @@ export const TextCard: MessageFns<TextCard> = {
           continue;
         }
         case 5: {
-          if (tag === 40) {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.isUserLiked = reader.bool();
+          continue;
+        }
+        case 6: {
+          if (tag === 48) {
             message.availableOperations.push(reader.int32() as any);
 
             continue;
           }
 
-          if (tag === 42) {
+          if (tag === 50) {
             const end2 = reader.uint32() + reader.pos;
             while (reader.pos < end2) {
               message.availableOperations.push(reader.int32() as any);
@@ -799,8 +858,9 @@ export const TextCard: MessageFns<TextCard> = {
     const message = createBaseTextCard();
     message.id = object.id ?? "";
     message.text = object.text ?? "";
-    message.orderNumber = object.orderNumber ?? 0;
+    message.order = object.order ?? 0;
     message.likesCount = object.likesCount ?? 0;
+    message.isUserLiked = object.isUserLiked ?? false;
     message.availableOperations = object.availableOperations?.map((e) => e) || [];
     return message;
   },

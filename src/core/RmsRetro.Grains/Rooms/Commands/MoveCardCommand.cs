@@ -14,11 +14,30 @@ public class MoveCardCommand(MoveCardOperation operation, IAuthService authServi
 	{
 		var card = state.Cards[Guid.Parse(Operation.CardId)];
 		var newColumn = state.Columns[Guid.Parse(Operation.NewColumnId)];
-		var oldColumn = state.Columns[card.ColumnId];
-		oldColumn.Cards.Remove(card);
-		newColumn.Cards.Add(card);
-		card.ColumnId = newColumn.Id;
+		if (newColumn.Id == card.ColumnId)
+		{
+			newColumn.Cards.Remove(card);
+			newColumn.Cards.Insert(Operation.NewOrderId, card);
+		}
+		else
+		{
+			var oldColumn = state.Columns[card.ColumnId];
+			oldColumn.Cards.Remove(card);
+			newColumn.Cards.Insert(Operation.NewOrderId, card);
+			card.ColumnId = newColumn.Id;
+			UpdateOrder(oldColumn);
+		}
+
+		UpdateOrder(newColumn);
 		return Task.CompletedTask;
+	}
+
+	private static void UpdateOrder(Column column)
+	{
+		for (var i = 0; i < column.Cards.Count; i++)
+		{
+			column.Cards[i].OrderId = i;
+		}
 	}
 
 	protected override bool CanHandle(Room state)

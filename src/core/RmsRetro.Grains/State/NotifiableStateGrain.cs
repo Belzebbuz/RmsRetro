@@ -35,10 +35,12 @@ public abstract class NotifiableStateGrain<T>(
 	{
 		if (context.ImplementationMethod.GetCustomAttribute<SaveStateAttribute>() is null) return;
 		await state.WriteStateAsync();
-		await notificationGateway.NotifyAsync(GetUpdateChannel(), new Message
+		await notificationGateway.NotifyAsync(GetUpdateChannel(), new NotificationEvent
 		{
-			EventType = EventType.StateUpdated,
-			Value = GetVersion()
+			StateChanged = new StateChangedEvent()
+			{
+				Value = GetVersion()
+			}
 		});
 	}
 	private void ThrowIfRecordNotExists(IIncomingGrainCallContext context)
