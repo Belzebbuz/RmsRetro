@@ -22,7 +22,7 @@ public class StartVotingCommand(StartVotingOperation operation, IAuthService aut
 		if (Operation.TimerMinutes > 0)
 		{
 			var timerGrain = factory.GetGrain<IRoomTimerGrain>(state.Id);
-			await timerGrain.StartVoteAsync(Operation.TimerMinutes);
+			await timerGrain.StartAsync(Operation.TimerMinutes, stopVoteOnEnd: true);
 		}
 	}
 

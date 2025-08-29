@@ -1,34 +1,30 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using RmsRetro.Abstractions.Rooms;
 using RmsRetro.Common.Extensions;
+using RmsRetro.Common.OrleansKeys;
 using RmsRetro.Grains.Gateways;
 using RmsRetro.MessageHub.Protos.HubApi;
+using RmsRetro.Protos.Api;
 
 namespace RmsRetro.Grains.Timers;
 
 public interface IRoomTimerGrain : IGrainWithGuidKey
 {
-	Task<bool> IsStartedAsync();
-	Task<Empty> StartAsync(int minutes);
+	Task<Empty> StartAsync(int minutes, bool stopVoteOnEnd = false);
 	Task<Empty> StopAsync();
-	Task StartVoteAsync(int operationMinutes);
 }
 
-public class RoomTimerGrain(INotificationHubGateway gateway) : Grain, IRoomTimerGrain
+public class RoomTimerGrain(INotificationHubGateway gateway) : Grain, IRoomTimerGrain, IDisposable
 {
 	private IGrainTimer? _timer;
 	private int? _currentValue;
 	private int? _startValue;
-	public Task<bool> IsStartedAsync()
-	{
-		return (_timer is not null).AsTask();
-	}
 
-	public Task<Empty> StartAsync(int minutes)
+	public Task<Empty> StartAsync(int minutes, bool stopVoteOnEnd = false)
 	{
 		_currentValue = minutes * 60;
 		_startValue = minutes * 60;
-		_timer = this.RegisterGrainTimer(() => TimerTick(), new GrainTimerCreationOptions
+		_timer = this.RegisterGrainTimer(() => TimerTick(stopVoteOnEnd), new GrainTimerCreationOptions
 		{
 			DueTime = TimeSpan.Zero,
 			Period = TimeSpan.FromSeconds(1),
@@ -37,22 +33,9 @@ public class RoomTimerGrain(INotificationHubGateway gateway) : Grain, IRoomTimer
 		return new Empty().AsTask();
 	}
 	
-	public async Task StartVoteAsync(int minutes)
-	{
-		await StopAsync();
-		_currentValue = minutes * 60;
-		_startValue = minutes * 60;
-		_timer = this.RegisterGrainTimer(_ => TimerTick(true), new GrainTimerCreationOptions
-		{
-			DueTime = TimeSpan.Zero,
-			Period = TimeSpan.FromSeconds(1),
-			KeepAlive = true
-		});
-	}
-	
 	public async Task<Empty> StopAsync()
 	{
-		_timer?.Dispose();
+		Dispose();
 		await gateway.NotifyAsync(this.GetPrimaryKey().ToString(), new ()
 		{
 			TimerTick = new TimerTickEvent()
@@ -81,11 +64,29 @@ public class RoomTimerGrain(INotificationHubGateway gateway) : Grain, IRoomTimer
 		
 		if (_currentValue == 0)
 		{
-			_timer?.Dispose();
+			Dispose();
 			if (stopVoteOnEnd)
 			{
-				await GrainFactory.GetGrain<IRoomGrain>(this.GetPrimaryKey()).StopVoteAsync();
+				await StopVotingAsync();
 			}
 		}
+	}
+
+	private async Task StopVotingAsync()
+	{
+		var id = this.GetPrimaryKey().ToString();
+		RequestContext.Set(RequestKeys.UserId, id);
+		var request = new InvokeRoomOperationRequest()
+		{
+			RoomId = id,
+			StopVoting = new StopVotingOperation()
+		};
+		await GrainFactory.GetGrain<IRoomGrain>(this.GetPrimaryKey()).HandleOperation(request);
+	}
+
+	public void Dispose()
+	{
+		_timer?.Dispose();
+		_timer = null;
 	}
 }

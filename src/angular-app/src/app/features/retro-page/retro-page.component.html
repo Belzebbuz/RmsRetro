@@ -15,20 +15,20 @@
   </div>
   <div class="nav-buttons">
     @if (timerSoundOff && timer) {
-      <button tuiIconButton iconStart="@tui.volume-x" (click)="toggleSound()" appearance="secondary"></button>
+      <button tuiIconButton size="m" iconStart="@tui.volume-x" (click)="toggleSound()" appearance="secondary"></button>
     } @else if(!timerSoundOff && timer) {
-      <button tuiIconButton iconStart="@tui.volume-2" (click)="toggleSound()" appearance="secondary"></button>
+      <button tuiIconButton size="m" iconStart="@tui.volume-2" (click)="toggleSound()" appearance="secondary"></button>
     }
-    <button [disabled]="!roomInfo.canStartTimer && !roomInfo.canStopTimer" appearance="secondary" (click)="startTimer()" tuiButton type="button">
+    <button [disabled]="!roomInfo.canStartTimer && !roomInfo.canStopTimer" size="m" appearance="secondary" (click)="startTimer()" tuiButton type="button">
       @if(timer){
-      <tui-progress-circle size="xs" [max]="timerMaxValue" [value]="timerCurrentValue">
+      <tui-progress-circle size="xxs" [max]="timerMaxValue" [value]="timerCurrentValue">
       </tui-progress-circle>
       {{ timer }}
       } @else {
       <tui-icon icon="@tui.timer"></tui-icon>
       Поставить таймер }
     </button>
-    <button [disabled]="!roomInfo.canStartVote && !roomInfo.canStopVote" (click)="startVote()" tuiButton type="button">
+    <button [disabled]="!roomInfo.canStartVote && !roomInfo.canStopVote" size="m" (click)="startVote()" tuiButton type="button">
       @if (roomInfo.isVoteStarted) { Остановить голосование } @else { Начать голосование }
     </button>
   </div>

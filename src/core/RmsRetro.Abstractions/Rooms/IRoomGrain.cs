@@ -9,5 +9,4 @@ public interface IRoomGrain : IGrainWithGuidKey
 	Task<Empty> ConnectAsync();
 	Task<Empty> HandleOperation(InvokeRoomOperationRequest request);
 	Task<GetRoomInfoResponse> GetAsync();
-	Task StopVoteAsync();
 }

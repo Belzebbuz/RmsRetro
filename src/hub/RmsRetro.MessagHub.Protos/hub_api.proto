@@ -19,9 +19,10 @@ message NotificationEvent {
   oneof event {
       StateChangedEvent state_changed = 1;
       TimerTickEvent timer_tick = 2;
+      EmptyEvent empty = 3;
   }
 }
-
+message EmptyEvent {}
 message StateChangedEvent {
   string value = 1;
 }

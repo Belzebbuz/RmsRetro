@@ -60,20 +60,13 @@ public class RoomGrain(
 	public Task<GetRoomInfoResponse> GetAsync() 
 		=> mapper.ToInfo(_state.State).AsTask();
 
-	[SaveState, AllowAnonymousGrain]
-	public Task StopVoteAsync()
-	{
-		_state.State.IsVoteStarted = false;
-		_state.State.Version++;
-		return Task.CompletedTask;
-	}
-
 	private void InitRoom()
 	{
 		_state.State = new Room()
 		{
 			Id = this.GetPrimaryKey(),
 		};
+		_state.State.Owners.Add(this.GetPrimaryKey().ToString());
 		_state.State.Owners.Add(authService.UserId);
 		_state.State.Users.Add(new User
 		{

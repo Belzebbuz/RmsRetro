@@ -9,7 +9,8 @@ namespace RmsRetro.MessageHub.Grpc;
 public class HubApiGrpcService(
 	IMessageChannelWriter writer, 
 	IMessageChannelReader reader, 
-	ApiService.ApiServiceClient client) : HubApiService.HubApiServiceBase
+	ApiService.ApiServiceClient client,
+	ILogger<HubApiGrpcService> logger) : HubApiService.HubApiServiceBase
 {
 	public override async Task<Empty> SendNotification(Notification request, ServerCallContext context)
 	{
@@ -26,9 +27,28 @@ public class HubApiGrpcService(
 		});
 		if (!userInfo.IsActive)
 			throw new UnauthorizedAccessException();
-		await foreach (var message in reader.ReadAsync(request.ChannelId))
+		
+		//что бы не упасть по таймауту
+		await responseStream.WriteAsync(new NotificationEvent()
 		{
-			await responseStream.WriteAsync(message);
+			Empty = new EmptyEvent()
+		});
+		var subId = Guid.NewGuid().ToString();
+		try
+		{
+			await foreach (var message in reader.ReadAsync(subId, request.ChannelId))
+			{
+				await responseStream.WriteAsync(message);
+			}
+		}
+		catch (Exception e)
+		{
+			logger.LogError(e.ToString());
+			throw;
+		}
+		finally
+		{
+			reader.Unsubscribe(subId, request.ChannelId);
 		}
 	}
 }

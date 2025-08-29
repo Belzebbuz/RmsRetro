@@ -28,8 +28,9 @@ public class StopVotingCommand(
 				column.Value.Cards[i].OrderId = i;
 			}
 		}
-		
-		await factory.GetGrain<IRoomTimerGrain>(state.Id).StopAsync();
+		//Если останавливает комната, значит это вызывал таймер, который уже остановлен
+		if(AuthService.UserId != state.Id.ToString())
+			await factory.GetGrain<IRoomTimerGrain>(state.Id).StopAsync();
 	}
 
 	protected override bool CanHandle(Room state)

@@ -13,7 +13,7 @@ public class StartTimerCommand (StartTimerOperation operation, IAuthService auth
 	protected override async Task ExecuteCoreAsync(Room state)
 	{
 		var timerGrain = factory.GetGrain<IRoomTimerGrain>(state.Id);
-		await timerGrain.StartAsync(Operation.Minutes);
+		await timerGrain.StartAsync(Operation.Minutes, stopVoteOnEnd: false);
 	}
 
 	protected override bool CanHandle(Room state)
